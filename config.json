@@ -1,0 +1,40 @@
+{
+  "WebServer": {
+    "Enabled": false,
+    "port": 8080
+  },
+  "BackupConfig": {
+    "Enabled": false,
+    "VaultWardenDataPath": "",
+    "BackupInterval": 1,
+    "BackupRetention": 7,
+    "ForUser": {
+      "Enabled": false,
+      "NotNeedFiles": [
+        "config.json",
+        "rsa_key.pem",
+        "rsa_key.pub.pem"
+      ],
+      "NotNeedFolders": [
+        "icon_cache",
+        "sends",
+        "attachments"
+      ],
+      "UserEmailList": [],
+      "SendInterval": 7
+    },
+    "Cos": {
+      "BucketUrl": "",
+      "SecretID": "",
+      "SecretKey": "",
+      "StorePath": ""
+    },
+    "Smtp": {
+      "Host": "",
+      "Port": 25,
+      "User": "",
+      "Password": "",
+      "SenderName": "Vault Backer"
+    }
+  }
+}
