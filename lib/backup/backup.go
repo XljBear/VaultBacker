@@ -25,61 +25,61 @@ func Backup(config models.Config) (backupKey string, err error) {
 		}
 	}()
 	// Create a new backup directory
-	fmt.Print("Preparing backup folder...")
+	log("Preparing backup folder...")
 	todayBackupPath, err = prepareBackupFolder()
 	if err != nil {
 		return
 	}
 	backupKey = backupKeyStore
-	fmt.Println("Done")
+	done()
 
 	// Copy the vault files to the backup directory
-	fmt.Print("Copying vault warden data...")
+	log("Copying vault warden data...")
 	err = copyVaultWardenData(config, todayBackupPath)
 	if err != nil {
 		return
 	}
-	fmt.Println("Done")
+	done()
 
 	// Remove sqlite database in the backup directory
-	fmt.Print("Removing sql temp file...")
+	log("Removing sql temp file...")
 	err = removeSqlTempFiles(todayBackupPath)
 	if err != nil {
 		return
 	}
-	fmt.Println("Done")
+	done()
 
 	// Process sqlite database backup
-	fmt.Print("Doing sqlite backup...")
+	log("Doing sqlite backup...")
 	err = doSqlBackup(config, todayBackupPath)
 	if err != nil {
 		return
 	}
-	fmt.Println("Done")
+	done()
 
 	// Zip the backup directory
-	fmt.Print("Zipping backup data...")
+	log("Zipping backup data...")
 	err = zipBackupData(todayBackupPath)
 	if err != nil {
 		return
 	}
-	fmt.Println("Done")
+	done()
 
 	// Check is need zip for the user
 	if config.BackupConfig.ForUser.Enabled {
 		// Zip the backup directory for the user
-		fmt.Print("Zipping backup data for user...")
+		log("Zipping backup data for user...")
 		err = zipBackupDataForUser(config, todayBackupPath)
 		if err != nil {
 			return
 		}
-		fmt.Println("Done")
+		done()
 	}
 
 	// Cleanup the backup directory
-	fmt.Print("Cleaning up backup folder...")
+	log("Cleaning up backup folder...")
 	err = cleanUpBackupFolder(todayBackupPath)
-	fmt.Println("Done")
+	done()
 	return
 }
 func getPwd() string {
@@ -197,7 +197,7 @@ func SendUserMail(config models.Config, backupKey string) (err error) {
 	}
 
 	for _, email := range userEmailList {
-		fmt.Print("Sending backup file to " + email + "...")
+		log("Sending backup file to " + email + "...")
 		message := mail.Message{
 			From:        config.BackupConfig.Smtp.User,
 			FromName:    config.BackupConfig.Smtp.SenderName,
@@ -218,8 +218,14 @@ func SendUserMail(config models.Config, backupKey string) (err error) {
 		if err != nil {
 			return
 		}
-		fmt.Println("Done")
+		done()
 	}
 	_ = os.Remove(backupFilePath)
 	return
+}
+func log(msg string) {
+	log(time.Now().Format("2006-01-02 15:04:05") + " " + msg)
+}
+func done() {
+	fmt.Println("Done")
 }
