@@ -16,13 +16,13 @@ func main() {
 
 	programPath, err := os.Getwd()
 	if err != nil {
-		fmt.Println(err)
+		log(err.Error())
 		return
 	}
 
 	configData, err := ioutil.ReadFile(programPath + "/config.json")
 	if err != nil {
-		fmt.Println("Error reading config file")
+		log("Error reading config file")
 		return
 	}
 
@@ -30,7 +30,7 @@ func main() {
 
 	err = json.Unmarshal(configData, &config)
 	if err != nil {
-		fmt.Println("Error parsing config file")
+		log("Error parsing config file")
 		return
 	}
 
@@ -44,19 +44,19 @@ func main() {
 	record := models.Record{}
 	//check record.json file exists
 	if _, err = os.Stat(programPath + "/record.json"); os.IsNotExist(err) {
-		fmt.Println("record.json file not found, creating...")
+		log("record.json file not found, creating...")
 		saveRecord(record)
 	}
 
 	recordData, err := ioutil.ReadFile(programPath + "/record.json")
 	if err != nil {
-		fmt.Println("Error reading record file")
+		log("Error reading record file")
 		return
 	}
 
 	err = json.Unmarshal(recordData, &record)
 	if err != nil {
-		fmt.Println("Error parsing record file")
+		log("Error parsing record file")
 		return
 	}
 
@@ -70,7 +70,7 @@ func main() {
 			int(now.Sub(*record.CosRecord.LastBackupTime).Hours()/24) >= config.BackupConfig.BackupInterval {
 			backupKey, err := doBackup(config)
 			if err != nil {
-				fmt.Println(err)
+				log(err.Error())
 				return
 			}
 			record.CosRecord.LastBackupTime = &now
@@ -86,7 +86,7 @@ func main() {
 					int(now.Sub(*record.UserRecord.LastSendTime).Hours()/24) >= config.BackupConfig.ForUser.SendInterval {
 					err = sendUserEmail(config, backupKey)
 					if err != nil {
-						fmt.Println(err)
+						log(err.Error())
 						return
 					}
 					record.UserRecord.LastSendTime = &now
@@ -101,7 +101,7 @@ func main() {
 		for i, backupFile := range record.BackupFiles {
 			if int(now.Sub(*backupFile.BackupTime).Hours()/24) > config.BackupConfig.BackupRetention {
 				backupFilePath := programPath + "/backup/" + backupFile.Key + ".zip"
-				fmt.Println("Delete old backup file " + backupFile.Key + ".zip")
+				log("Delete old backup file " + backupFile.Key + ".zip")
 				_ = os.Remove(backupFilePath)
 				record.BackupFiles = append(record.BackupFiles[:i], record.BackupFiles[i+1:]...)
 				dirtyFlag = true
@@ -117,13 +117,13 @@ func main() {
 func saveRecord(record models.Record) {
 	programPath, err := os.Getwd()
 	if err != nil {
-		fmt.Println(err)
+		log(err.Error())
 		return
 	}
 	tempData, _ := json.Marshal(record)
 	err = ioutil.WriteFile(programPath+"/record.json", tempData, 0644)
 	if err != nil {
-		fmt.Println("Error writing record.json file")
+		log("Error writing record.json file")
 		return
 	}
 }
@@ -131,23 +131,26 @@ func doBackup(config models.Config) (backupKey string, err error) {
 
 	backupKey, err = backup.Backup(config)
 	if err != nil {
-		fmt.Println(err.Error())
+		log(err.Error())
 		return
 	}
 	fmt.Print("Uploading backup to Cos...")
 	err = backup.Upload(config, backupKey)
 	if err != nil {
-		fmt.Println(err.Error())
+		log(err.Error())
 		return
 	}
-	fmt.Println("Done")
+	log("Done")
 	return
 }
 func sendUserEmail(config models.Config, backupKey string) (err error) {
 	err = backup.SendUserMail(config, backupKey)
 	if err != nil {
-		fmt.Println(err.Error())
+		log(err.Error())
 		return
 	}
 	return
+}
+func log(msg string) {
+	fmt.Println(time.Now().Format("2006-01-02 15:04:05") + " " + msg)
 }

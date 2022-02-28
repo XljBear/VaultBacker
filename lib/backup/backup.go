@@ -102,7 +102,6 @@ func prepareBackupFolder() (todayBackupPath string, err error) {
 	return
 }
 func copyVaultWardenData(config models.Config, todayBackupPath string) (err error) {
-
 	err = file.Copy(config.BackupConfig.VaultWardenDataPath+"/", todayBackupPath)
 	return
 }
