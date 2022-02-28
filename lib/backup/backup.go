@@ -224,7 +224,7 @@ func SendUserMail(config models.Config, backupKey string) (err error) {
 	return
 }
 func log(msg string) {
-	log(time.Now().Format("2006-01-02 15:04:05") + " " + msg)
+	fmt.Print(time.Now().Format("2006-01-02 15:04:05") + " " + msg)
 }
 func done() {
 	fmt.Println("Done")
