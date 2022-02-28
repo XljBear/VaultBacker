@@ -16,13 +16,13 @@ func main() {
 
 	programPath, err := os.Getwd()
 	if err != nil {
-		log(err.Error())
+		log(err.Error() + "\n")
 		return
 	}
 
 	configData, err := ioutil.ReadFile(programPath + "/config.json")
 	if err != nil {
-		log("Error reading config file")
+		log("Error reading config file\n")
 		return
 	}
 
@@ -30,7 +30,7 @@ func main() {
 
 	err = json.Unmarshal(configData, &config)
 	if err != nil {
-		log("Error parsing config file")
+		log("Error parsing config file\n")
 		return
 	}
 
@@ -44,19 +44,19 @@ func main() {
 	record := models.Record{}
 	//check record.json file exists
 	if _, err = os.Stat(programPath + "/record.json"); os.IsNotExist(err) {
-		log("record.json file not found, creating...")
+		log("record.json file not found, creating...\n")
 		saveRecord(record)
 	}
 
 	recordData, err := ioutil.ReadFile(programPath + "/record.json")
 	if err != nil {
-		log("Error reading record file")
+		log("Error reading record file\n")
 		return
 	}
 
 	err = json.Unmarshal(recordData, &record)
 	if err != nil {
-		log("Error parsing record file")
+		log("Error parsing record file\n")
 		return
 	}
 
@@ -101,7 +101,7 @@ func main() {
 		for i, backupFile := range record.BackupFiles {
 			if int(now.Sub(*backupFile.BackupTime).Hours()/24) > config.BackupConfig.BackupRetention {
 				backupFilePath := programPath + "/backup/" + backupFile.Key + ".zip"
-				log("Delete old backup file " + backupFile.Key + ".zip")
+				log("Delete old backup file " + backupFile.Key + ".zip\n")
 				_ = os.Remove(backupFilePath)
 				record.BackupFiles = append(record.BackupFiles[:i], record.BackupFiles[i+1:]...)
 				dirtyFlag = true
@@ -123,7 +123,7 @@ func saveRecord(record models.Record) {
 	tempData, _ := json.Marshal(record)
 	err = ioutil.WriteFile(programPath+"/record.json", tempData, 0644)
 	if err != nil {
-		log("Error writing record.json file")
+		log("Error writing record.json file\n")
 		return
 	}
 }
@@ -134,13 +134,13 @@ func doBackup(config models.Config) (backupKey string, err error) {
 		log(err.Error())
 		return
 	}
-	fmt.Print("Uploading backup to Cos...")
+	log("Uploading backup to Cos...")
 	err = backup.Upload(config, backupKey)
 	if err != nil {
 		log(err.Error())
 		return
 	}
-	log("Done")
+	fmt.Println("Done")
 	return
 }
 func sendUserEmail(config models.Config, backupKey string) (err error) {
@@ -152,5 +152,5 @@ func sendUserEmail(config models.Config, backupKey string) (err error) {
 	return
 }
 func log(msg string) {
-	fmt.Println(time.Now().Format("2006-01-02 15:04:05") + " " + msg)
+	fmt.Print(time.Now().Format("2006-01-02 15:04:05") + " " + msg)
 }
