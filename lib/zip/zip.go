@@ -10,16 +10,16 @@ import (
 
 func Zip(srcDir string, zipFileName string) (err error) {
 
-	os.RemoveAll(zipFileName)
+	_ = os.RemoveAll(zipFileName)
 
 	zipFile, err := os.Create(zipFileName)
 	if err != nil {
 		return
 	}
-	defer zipFile.Close()
+	defer func() { _ = zipFile.Close() }()
 
 	archive := zip.NewWriter(zipFile)
-	defer archive.Close()
+	defer func() { _ = archive.Close() }()
 
 	err = filepath.Walk(srcDir, func(path string, info os.FileInfo, _ error) error {
 
@@ -40,7 +40,7 @@ func Zip(srcDir string, zipFileName string) (err error) {
 		writer, _ := archive.CreateHeader(header)
 		if !info.IsDir() {
 			file, _ := os.Open(path)
-			defer file.Close()
+			defer func() { _ = file.Close() }()
 			_, err = io.Copy(writer, file)
 			if err != nil {
 				return err

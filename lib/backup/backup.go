@@ -107,8 +107,8 @@ func copyVaultWardenData(config models.Config, todayBackupPath string) (err erro
 }
 func removeSqlTempFiles(todayBackupPath string) (err error) {
 	needRemoveFile := []string{"db.sqlite3", "db.sqlite3-shm", "db.sqlite3-wal"}
-	for _, file := range needRemoveFile {
-		err = os.Remove(todayBackupPath + "/" + file)
+	for _, removeFile := range needRemoveFile {
+		err = os.Remove(todayBackupPath + "/" + removeFile)
 		if err != nil {
 			return
 		}
@@ -132,8 +132,8 @@ func zipBackupData(todayBackupPath string) (err error) {
 }
 func zipBackupDataForUser(config models.Config, todayBackupPath string) (err error) {
 	backupNotForUserFiles := config.BackupConfig.ForUser.NotNeedFiles
-	for _, file := range backupNotForUserFiles {
-		err = os.Remove(todayBackupPath + "/" + file)
+	for _, removeFile := range backupNotForUserFiles {
+		err = os.Remove(todayBackupPath + "/" + removeFile)
 		if err != nil {
 			return
 		}
